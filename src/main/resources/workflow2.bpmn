@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.46.1">
+  <bpmn:process id="Full_Service_Workflow" name="Rework Flow with SLA and Suspension" isExecutable="true">
+    <bpmn:startEvent id="Start_External" name="City Crew Event" camunda:formKey="Submit_Ticket">
+      <bpmn:outgoing>Flow_To_Assign</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Msg_Start_Def" messageRef="Msg_ExternalData" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_To_Assign" sourceRef="Start_External" targetRef="Activity_Assign" />
+    <bpmn:userTask id="Activity_Assign" name="Assign Technician" camunda:formRef="Form_AssignTech" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:incoming>Flow_To_Assign</bpmn:incoming>
+      <bpmn:outgoing>Flow_To_Handle</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_To_Handle" sourceRef="Activity_Assign" targetRef="Activity_Handle" />
+    <bpmn:userTask id="Activity_Handle" name="Handle Issue (Technician)" camunda:formRef="Form_WorkLog" camunda:formRefBinding="latest" camunda:assignee="${technicianId}">
+      <bpmn:incoming>Flow_To_Handle</bpmn:incoming>
+      <bpmn:incoming>Flow_Rework</bpmn:incoming>
+      <bpmn:incoming>Flow_Resume</bpmn:incoming>
+      <bpmn:outgoing>Flow_To_Approve</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:boundaryEvent id="Event_SLA" name="2m SLA" cancelActivity="false" attachedToRef="Activity_Handle">
+      <bpmn:outgoing>Flow_SLA</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Timer_SLA">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_SLA" sourceRef="Event_SLA" targetRef="Activity_Escalate" />
+    <bpmn:serviceTask id="Activity_Escalate" name="Notify Supervisor" camunda:delegateExpression="${slaNotifyDelegate}" />
+    <bpmn:boundaryEvent id="Event_Suspend" name="Suspend" attachedToRef="Activity_Handle">
+      <bpmn:outgoing>Flow_Hold</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Msg_Suspend_Def" messageRef="Msg_Suspend" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_Hold" sourceRef="Event_Suspend" targetRef="Event_Wait_Resume" />
+    <bpmn:intermediateCatchEvent id="Event_Wait_Resume" name="Wait for Resume">
+      <bpmn:incoming>Flow_Hold</bpmn:incoming>
+      <bpmn:outgoing>Flow_Resume</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Msg_Resume_Def" messageRef="Msg_Resume" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_Resume" sourceRef="Event_Wait_Resume" targetRef="Activity_Handle" />
+    <bpmn:sequenceFlow id="Flow_To_Approve" sourceRef="Activity_Handle" targetRef="Activity_Approve" />
+    <bpmn:userTask id="Activity_Approve" name="Supervisor Approval" camunda:formRef="Form_Approval" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:incoming>Flow_To_Approve</bpmn:incoming>
+      <bpmn:outgoing>Flow_To_Gateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_To_Gateway" sourceRef="Activity_Approve" targetRef="Gateway_Decision" />
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Approved?">
+      <bpmn:incoming>Flow_To_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rework</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_Rework" name="No (Rework)" sourceRef="Gateway_Decision" targetRef="Activity_Handle">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Approved" name="Yes" sourceRef="Gateway_Decision" targetRef="End_Success">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="End_Success" name="Completed">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:message id="Msg_ExternalData" name="Message_ComplaintReceived2" />
+  <bpmn:message id="Msg_Suspend" name="Message_HoldRequest" />
+  <bpmn:message id="Msg_Resume" name="Message_ResumeRequest" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Full_Service_Workflow">
+      <bpmndi:BPMNShape id="Start_External_di" bpmnElement="Start_External">
+        <dc:Bounds x="152" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="130" y="268" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Assign_di" bpmnElement="Activity_Assign">
+        <dc:Bounds x="240" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Handle_di" bpmnElement="Activity_Handle">
+        <dc:Bounds x="400" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Escalate_di" bpmnElement="Activity_Escalate">
+        <dc:Bounds x="550" y="330" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Wait_Resume_di" bpmnElement="Event_Wait_Resume">
+        <dc:Bounds x="582" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="560" y="158" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Approve_di" bpmnElement="Activity_Approve">
+        <dc:Bounds x="700" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Decision_di" bpmnElement="Gateway_Decision" isMarkerVisible="true">
+        <dc:Bounds x="855" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="854" y="275" width="53" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Success_di" bpmnElement="End_Success">
+        <dc:Bounds x="962" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="953" y="268" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Suspend_di" bpmnElement="Event_Suspend">
+        <dc:Bounds x="452" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="488" y="193" width="44" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_SLA_di" bpmnElement="Event_SLA">
+        <dc:Bounds x="452" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="490" y="303" width="40" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_To_Assign_di" bpmnElement="Flow_To_Assign">
+        <di:waypoint x="188" y="250" />
+        <di:waypoint x="240" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_To_Handle_di" bpmnElement="Flow_To_Handle">
+        <di:waypoint x="340" y="250" />
+        <di:waypoint x="400" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Resume_di" bpmnElement="Flow_Resume">
+        <di:waypoint x="618" y="140" />
+        <di:waypoint x="640" y="140" />
+        <di:waypoint x="640" y="80" />
+        <di:waypoint x="430" y="80" />
+        <di:waypoint x="430" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Rework_di" bpmnElement="Flow_Rework">
+        <di:waypoint x="880" y="275" />
+        <di:waypoint x="880" y="460" />
+        <di:waypoint x="450" y="460" />
+        <di:waypoint x="450" y="290" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="634" y="435" width="63" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_To_Approve_di" bpmnElement="Flow_To_Approve">
+        <di:waypoint x="500" y="250" />
+        <di:waypoint x="700" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SLA_di" bpmnElement="Flow_SLA">
+        <di:waypoint x="470" y="308" />
+        <di:waypoint x="470" y="370" />
+        <di:waypoint x="550" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Hold_di" bpmnElement="Flow_Hold">
+        <di:waypoint x="470" y="192" />
+        <di:waypoint x="470" y="140" />
+        <di:waypoint x="582" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_To_Gateway_di" bpmnElement="Flow_To_Gateway">
+        <di:waypoint x="800" y="250" />
+        <di:waypoint x="855" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Approved_di" bpmnElement="Flow_Approved">
+        <di:waypoint x="905" y="250" />
+        <di:waypoint x="962" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="925" y="225" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

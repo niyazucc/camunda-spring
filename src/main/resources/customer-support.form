@@ -1,0 +1,25 @@
+{
+  "components": [
+    {
+      "text": "### Collaboration Context\n{{collabNotes}}",
+      "type": "text"
+    },
+    {
+      "label": "Client Communication Status",
+      "type": "select",
+      "key": "clientStatus",
+      "values": [
+        { "label": "Client Notified", "value": "notified" },
+        { "label": "Waiting for Client Response", "value": "waiting" }
+      ]
+    },
+    {
+      "label": "Documentation Summary",
+      "type": "textarea",
+      "key": "supportSummary",
+      "description": "Describe what was communicated to the client."
+    }
+  ],
+  "type": "default",
+  "id": "Form_ClientDoc"
+}

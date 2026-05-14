@@ -1,0 +1,88 @@
+{
+  "components": [
+    {
+      "text": "# Event Details",
+      "type": "text",
+      "layout": {
+        "row": "Row_0t5066g",
+        "columns": null
+      },
+      "id": "Field_1ikhdnh"
+    },
+    {
+      "text": "The issue reported is: {{complaint_title}}",
+      "type": "text",
+      "layout": {
+        "row": "Row_0bo9cve",
+        "columns": null
+      },
+      "id": "Field_1t1a7rb"
+    },
+    {
+      "text": "Description: {{description}}",
+      "type": "text",
+      "layout": {
+        "row": "Row_0me60vn",
+        "columns": null
+      },
+      "id": "Field_0f2njgo"
+    },
+    {
+      "text": "# Assign Task to Technician",
+      "type": "text",
+      "layout": {
+        "row": "Row_14igye8",
+        "columns": null
+      },
+      "id": "Field_017vj0r"
+    },
+    {
+      "label": "Select Technician",
+      "values": [
+        {
+          "label": "Aiman",
+          "value": "aiman"
+        },
+        {
+          "label": "Nizam",
+          "value": "nizam"
+        },
+        {
+          "label": "Technician",
+          "value": "technician"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_06wf71l",
+        "columns": null
+      },
+      "id": "Field_0vprigb",
+      "key": "technicianId",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Assignment Instructions",
+      "type": "textarea",
+      "id": "Field_notes",
+      "key": "assignmentNotes",
+      "layout": {
+        "row": "Row_15fqepi"
+      },
+      "validate": {
+        "required": true
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_AssignTech",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.24.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.46.1"
+  },
+  "schemaVersion": 19
+}

@@ -1,0 +1,72 @@
+{
+  "components": [
+    {
+      "text": "# Team Assignment\nAssign the technical lead and provide general instructions for this co-handling task.",
+      "type": "text",
+      "id": "Field_0aodhui",
+      "layout": {
+        "row": "Row_0pfjmyk"
+      }
+    },
+    {
+      "label": "Select Technician",
+      "type": "select",
+      "key": "technicianId",
+      "id": "Field_0zr1osx",
+      "layout": {
+        "row": "Row_0bxe9dr"
+      },
+      "values": [
+        {
+          "label": "Aiman",
+          "value": "aiman"
+        },
+        {
+          "label": "Nizam",
+          "value": "nizam"
+        },
+        {
+          "label": "Technician",
+          "value": "technician"
+        }
+      ]
+    },
+    {
+      "label": "Select Documentation Support",
+      "values": [
+        {
+          "label": "Hadi",
+          "value": "hadi"
+        },
+        {
+          "label": "Iqram",
+          "value": "iqram"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_12bny6y",
+        "columns": null
+      },
+      "id": "Field_06jb0gf",
+      "key": "supportId"
+    },
+    {
+      "label": "Shared Collaboration Notes",
+      "type": "textarea",
+      "key": "collabNotes",
+      "description": "These notes will be seen by both Tech and Support.",
+      "id": "Field_060mdwu",
+      "layout": {
+        "row": "Row_098pts2"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_AssignTeam",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.46.1"
+  },
+  "schemaVersion": 19
+}

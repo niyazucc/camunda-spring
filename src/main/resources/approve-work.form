@@ -1,0 +1,37 @@
+{
+  "type": "default",
+  "id": "Form_Approval",
+  "components": [
+    {
+      "label": "Review Work Performed",
+      "type": "textarea",
+      "id": "Field_review_work",
+      "key": "workPerformed",
+      "disabled": true
+    },
+    {
+      "label": "Do you approve this work?",
+      "type": "radio",
+      "id": "Field_approved_decision",
+      "key": "approved",
+      "values": [
+        { "label": "Yes, approve work", "value": true },
+        { "label": "No, send back for rework", "value": false }
+      ],
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Rejection Feedback",
+      "type": "textarea",
+      "id": "Field_comments",
+      "key": "rejectionComments",
+      "conditional": {
+        "hide": "=approved = true"
+      }
+    }
+  ],
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.24.0"
+}

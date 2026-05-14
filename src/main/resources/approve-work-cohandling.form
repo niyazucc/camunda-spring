@@ -1,0 +1,53 @@
+{
+  "components": [
+    {
+      "text": "# Final Review\n**Tech Fix:** {{technicalWorkDone}}\n**Support Update:** {{supportSummary}}",
+      "type": "text",
+      "id": "Field_0h07otl",
+      "layout": {
+        "row": "Row_05w43i1"
+      }
+    },
+    {
+      "label": "Approval Decision",
+      "values": [
+        {
+          "label": "Approve & Close",
+          "value": true
+        },
+        {
+          "label": "Reject (Send back to Team)",
+          "value": false
+        }
+      ],
+      "type": "radio",
+      "key": "approved",
+      "validate": {
+        "required": true
+      },
+      "id": "Field_1d7zas2",
+      "layout": {
+        "row": "Row_0ffm5dh"
+      }
+    },
+    {
+      "label": "Rejection/Feedback Notes",
+      "type": "textarea",
+      "key": "rejectionComments",
+      "conditional": {
+        "hide": "=approved == true"
+      },
+      "id": "Field_0g340a0",
+      "layout": {
+        "row": "Row_0a29h5c"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_FinalApprove",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.46.1"
+  },
+  "schemaVersion": 19
+}

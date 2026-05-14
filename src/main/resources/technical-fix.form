@@ -1,0 +1,21 @@
+{
+  "components": [
+    {
+      "text": "### Supervisor Instructions\n{{collabNotes}}",
+      "type": "text"
+    },
+    {
+      "label": "Technical Work Log",
+      "type": "textarea",
+      "key": "technicalWorkDone",
+      "validate": { "required": true }
+    },
+    {
+      "label": "Hardware/Parts Used",
+      "type": "textfield",
+      "key": "partsUsed"
+    }
+  ],
+  "type": "default",
+  "id": "Form_TechnicalFix"
+}

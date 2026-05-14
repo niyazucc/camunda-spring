@@ -1,0 +1,49 @@
+{
+  "components": [
+    {
+      "label": "Supervisor Instructions",
+      "type": "textfield",
+      "id": "Field_view_notes",
+      "key": "assignmentNotes",
+      "disabled": true,
+      "layout": {
+        "row": "Row_12zmmxk"
+      }
+    },
+    {
+      "label": "Reject Reason",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_1gids5f",
+        "columns": null
+      },
+      "id": "Field_1ga7stm",
+      "key": "rejectionComments",
+      "readonly": true,
+      "conditional": {
+        "hide": "=rejectionComments = null or rejectionComments = \"\""
+      }
+    },
+    {
+      "label": "Detailed Work Description",
+      "type": "textarea",
+      "id": "Field_work_done",
+      "key": "workPerformed",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_0q03k1s"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_WorkLog",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.24.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.46.1"
+  },
+  "schemaVersion": 19
+}
