@@ -35,7 +35,7 @@
       "type": "textarea",
       "key": "rejectionComments",
       "conditional": {
-        "hide": "=approved == true"
+        "hide": "=approved = true"
       },
       "id": "Field_0g340a0",
       "layout": {

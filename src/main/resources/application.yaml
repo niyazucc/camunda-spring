@@ -23,3 +23,5 @@ camunda.bpm:
   generic-properties:
     properties:
       historyTimeToLive: P180D
+
+      

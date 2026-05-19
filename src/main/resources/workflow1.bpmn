@@ -7,18 +7,26 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_To_Assign" sourceRef="Start_External" targetRef="Activity_Assign" />
     <bpmn:userTask id="Activity_Assign" name="Assign Technician" camunda:formRef="Form_AssignTech" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
-      <bpmn:extensionElements />
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_To_Assign</bpmn:incoming>
       <bpmn:outgoing>Flow_1</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1" sourceRef="Activity_Assign" targetRef="Activity_Handle" />
     <bpmn:userTask id="Activity_Handle" name="Handle Issue (Technician)" camunda:formRef="Form_WorkLog" camunda:formRefBinding="latest" camunda:assignee="${technicianId}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:incoming>Flow_Rework</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_Handle" targetRef="Activity_Approve" />
     <bpmn:userTask id="Activity_Approve" name="Supervisor Approval" camunda:formRef="Form_Approval" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
     </bpmn:userTask>

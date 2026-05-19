@@ -7,11 +7,17 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_To_Assign" sourceRef="Start_External" targetRef="Activity_Assign" />
     <bpmn:userTask id="Activity_Assign" name="Assign Technician" camunda:formRef="Form_AssignTech" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_To_Assign</bpmn:incoming>
       <bpmn:outgoing>Flow_To_Handle</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_To_Handle" sourceRef="Activity_Assign" targetRef="Activity_Handle" />
     <bpmn:userTask id="Activity_Handle" name="Handle Issue (Technician)" camunda:formRef="Form_WorkLog" camunda:formRefBinding="latest" camunda:assignee="${technicianId}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_To_Handle</bpmn:incoming>
       <bpmn:incoming>Flow_Rework</bpmn:incoming>
       <bpmn:incoming>Flow_Resume</bpmn:incoming>
@@ -24,7 +30,13 @@
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_SLA" sourceRef="Event_SLA" targetRef="Activity_Escalate" />
-    <bpmn:serviceTask id="Activity_Escalate" name="Notify Supervisor" camunda:delegateExpression="${slaNotifyDelegate}" />
+    <bpmn:serviceTask id="Activity_Escalate" name="Notify Supervisor" camunda:delegateExpression="${slaNotifyDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="slaTargetGroups">supervisor</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Event_Suspend" name="Suspend" attachedToRef="Activity_Handle">
       <bpmn:outgoing>Flow_Hold</bpmn:outgoing>
       <bpmn:messageEventDefinition id="Msg_Suspend_Def" messageRef="Msg_Suspend" />
@@ -118,26 +130,6 @@
         <di:waypoint x="340" y="250" />
         <di:waypoint x="400" y="250" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Resume_di" bpmnElement="Flow_Resume">
-        <di:waypoint x="618" y="140" />
-        <di:waypoint x="640" y="140" />
-        <di:waypoint x="640" y="80" />
-        <di:waypoint x="430" y="80" />
-        <di:waypoint x="430" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Rework_di" bpmnElement="Flow_Rework">
-        <di:waypoint x="880" y="275" />
-        <di:waypoint x="880" y="460" />
-        <di:waypoint x="450" y="460" />
-        <di:waypoint x="450" y="290" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="634" y="435" width="63" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_To_Approve_di" bpmnElement="Flow_To_Approve">
-        <di:waypoint x="500" y="250" />
-        <di:waypoint x="700" y="250" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_SLA_di" bpmnElement="Flow_SLA">
         <di:waypoint x="470" y="308" />
         <di:waypoint x="470" y="370" />
@@ -148,9 +140,29 @@
         <di:waypoint x="470" y="140" />
         <di:waypoint x="582" y="140" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Resume_di" bpmnElement="Flow_Resume">
+        <di:waypoint x="618" y="140" />
+        <di:waypoint x="640" y="140" />
+        <di:waypoint x="640" y="80" />
+        <di:waypoint x="430" y="80" />
+        <di:waypoint x="430" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_To_Approve_di" bpmnElement="Flow_To_Approve">
+        <di:waypoint x="500" y="250" />
+        <di:waypoint x="700" y="250" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_To_Gateway_di" bpmnElement="Flow_To_Gateway">
         <di:waypoint x="800" y="250" />
         <di:waypoint x="855" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Rework_di" bpmnElement="Flow_Rework">
+        <di:waypoint x="880" y="275" />
+        <di:waypoint x="880" y="460" />
+        <di:waypoint x="450" y="460" />
+        <di:waypoint x="450" y="290" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="634" y="435" width="63" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_Approved_di" bpmnElement="Flow_Approved">
         <di:waypoint x="905" y="250" />
