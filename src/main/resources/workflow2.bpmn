@@ -26,7 +26,7 @@
     <bpmn:boundaryEvent id="Event_SLA" name="2m SLA" cancelActivity="false" attachedToRef="Activity_Handle">
       <bpmn:outgoing>Flow_SLA</bpmn:outgoing>
       <bpmn:timerEventDefinition id="Timer_SLA">
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1M</bpmn:timeDuration>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30S</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_SLA" sourceRef="Event_SLA" targetRef="Activity_Escalate" />
@@ -50,6 +50,9 @@
     <bpmn:sequenceFlow id="Flow_Resume" sourceRef="Event_Wait_Resume" targetRef="Activity_Handle" />
     <bpmn:sequenceFlow id="Flow_To_Approve" sourceRef="Activity_Handle" targetRef="Activity_Approve" />
     <bpmn:userTask id="Activity_Approve" name="Supervisor Approval" camunda:formRef="Form_Approval" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_To_Approve</bpmn:incoming>
       <bpmn:outgoing>Flow_To_Gateway</bpmn:outgoing>
     </bpmn:userTask>

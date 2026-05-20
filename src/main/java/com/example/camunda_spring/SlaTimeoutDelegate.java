@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Component("slaTimeoutDelegate")
+@Component("slaNotifyDelegate")
 public class SlaTimeoutDelegate implements JavaDelegate {
 
     private static final Logger LOGGER = Logger.getLogger(SlaTimeoutDelegate.class.getName());

@@ -2,6 +2,9 @@
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.46.1">
   <bpmn:process id="CoHandling_Rework_Process" name="Co-Handling Collaboration Workflow" isExecutable="true">
     <bpmn:userTask id="Activity_Assign" name="Assign Team" camunda:formRef="Form_AssignTeam" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_09l3ieg</bpmn:incoming>
       <bpmn:outgoing>Flow_To_Fork</bpmn:outgoing>
     </bpmn:userTask>
@@ -11,10 +14,16 @@
       <bpmn:outgoing>Flow_Path_Support</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:userTask id="Activity_Technical_Fix" name="Technical Fix (Technician)" camunda:formRef="Form_TechnicalFix" camunda:formRefBinding="latest" camunda:assignee="${technicianId}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Path_Tech</bpmn:incoming>
       <bpmn:outgoing>Flow_Join_Tech</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_Customer_Update" name="Client Documentation (Support)" camunda:formRef="Form_ClientDoc" camunda:formRefBinding="latest" camunda:assignee="${supportId}">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_Path_Support</bpmn:incoming>
       <bpmn:outgoing>Flow_Join_Support</bpmn:outgoing>
     </bpmn:userTask>
@@ -24,6 +33,9 @@
       <bpmn:outgoing>Flow_To_Approve</bpmn:outgoing>
     </bpmn:inclusiveGateway>
     <bpmn:userTask id="Activity_Approve" name="Final Supervisor Approval" camunda:formRef="Form_FinalApprove" camunda:formRefBinding="latest" camunda:candidateGroups="supervisor">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${pushTaskNotificationListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_To_Approve</bpmn:incoming>
       <bpmn:outgoing>Flow_To_Decision</bpmn:outgoing>
     </bpmn:userTask>
@@ -81,16 +93,16 @@
           <dc:Bounds x="898" y="121" width="53" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1vesplk_di" bpmnElement="Event_0luag0f">
-        <dc:Bounds x="150" y="155" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="128" y="191" width="81" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="End_Success_di" bpmnElement="End_Success">
         <dc:Bounds x="1012" y="152" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1007" y="188" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1vesplk_di" bpmnElement="Event_0luag0f">
+        <dc:Bounds x="150" y="155" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="128" y="191" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_09l3ieg_di" bpmnElement="Flow_09l3ieg">
