@@ -152,11 +152,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_Reject_di" bpmnElement="Flow_Reject">
         <di:waypoint x="925" y="195" />
-        <di:waypoint x="925" y="330" />
-        <di:waypoint x="290" y="330" />
+        <di:waypoint x="925" y="350" />
+        <di:waypoint x="290" y="350" />
         <di:waypoint x="290" y="210" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="576" y="305" width="63" height="14" />
+          <dc:Bounds x="577" y="325" width="62" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>

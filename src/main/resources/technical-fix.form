@@ -1,21 +1,49 @@
 {
   "components": [
     {
-      "text": "### Supervisor Instructions\n{{collabNotes}}",
-      "type": "text"
+      "text": "# Supervisor Instructions",
+      "type": "text",
+      "layout": {
+        "row": "Row_0iblijt",
+        "columns": null
+      },
+      "id": "Field_1qmv6qs"
+    },
+    {
+      "text": "Details: {{collabNotes}}",
+      "type": "text",
+      "id": "Field_1eeh5a7",
+      "layout": {
+        "row": "Row_10tex00"
+      }
     },
     {
       "label": "Technical Work Log",
       "type": "textarea",
       "key": "technicalWorkDone",
-      "validate": { "required": true }
+      "validate": {
+        "required": true
+      },
+      "id": "Field_0t596eh",
+      "layout": {
+        "row": "Row_1gwsmcz"
+      }
     },
     {
       "label": "Hardware/Parts Used",
       "type": "textfield",
-      "key": "partsUsed"
+      "key": "partsUsed",
+      "id": "Field_1f7b4hl",
+      "layout": {
+        "row": "Row_06i59u6"
+      }
     }
   ],
   "type": "default",
-  "id": "Form_TechnicalFix"
+  "id": "Form_TechnicalFix",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.46.1"
+  },
+  "schemaVersion": 19
 }

@@ -1,7 +1,8 @@
 package com.example.camunda_spring;
 
-import com.example.camunda_spring.service.PushNotificationService;
-import com.onesignal.client.ApiException;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.delegate.DelegateTask;
 import org.camunda.bpm.engine.delegate.TaskListener;
@@ -9,6 +10,7 @@ import org.camunda.bpm.engine.identity.User;
 import org.camunda.bpm.engine.task.IdentityLink;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,11 +22,10 @@ public class PushTaskNotificationListener implements TaskListener {
 
     private static final Logger LOGGER = Logger.getLogger(PushTaskNotificationListener.class.getName());
 
-    private final PushNotificationService pushNotificationService;
     private final IdentityService identityService;
 
-    public PushTaskNotificationListener(PushNotificationService pushNotificationService, IdentityService identityService) {
-        this.pushNotificationService = pushNotificationService;
+    // We can inject IdentityService directly. FirebaseMessaging handles its own singletons.
+    public PushTaskNotificationListener(IdentityService identityService) {
         this.identityService = identityService;
     }
 
@@ -32,11 +33,13 @@ public class PushTaskNotificationListener implements TaskListener {
     public void notify(DelegateTask task) {
         String assignee = task.getAssignee();
 
+        // Scenario 1: Task explicitly assigned to a single person
         if (assignee != null && !assignee.trim().isEmpty()) {
-            sendNotification(assignee, task);
+            sendFirebaseNotification(assignee, task);
             return;
         }
 
+        // Scenario 2: Task is unassigned but has Candidate Groups
         Set<String> groupIds = new LinkedHashSet<>();
         Set<String> userIds = new LinkedHashSet<>();
 
@@ -55,7 +58,7 @@ public class PushTaskNotificationListener implements TaskListener {
         if (!groupIds.isEmpty() && !userIds.isEmpty()) {
             LOGGER.info("Task '" + task.getName() + "' is unassigned but available for Groups: "
                     + groupIds + ". Notifying users: " + userIds);
-            sendNotifications(List.copyOf(userIds), task);
+            sendFirebaseNotificationsToMultipleUsers(List.copyOf(userIds), task);
         } else if (!groupIds.isEmpty()) {
             LOGGER.info("Task '" + task.getName() + "' is available for Groups: "
                     + groupIds + ", but no users were found in those groups.");
@@ -64,27 +67,68 @@ public class PushTaskNotificationListener implements TaskListener {
         }
     }
 
-    private void sendNotification(String targetUser, DelegateTask task) {
+    /**
+     * Sends a Firebase message to a single user by looking up their token in H2 storage
+     */
+    private void sendFirebaseNotification(String targetUser, DelegateTask task) {
+        // Pull the token directly out of Camunda's user info table
+        String userToken = identityService.getUserInfo(targetUser, "fcm_token");
+
+        if (userToken == null || userToken.trim().isEmpty()) {
+            LOGGER.warning("Could not send push notification. No FCM token registered for user: " + targetUser);
+            return;
+        }
+
         try {
-            pushNotificationService.sendToExternalUser(
-                    targetUser,
-                    "New Task Assigned",
-                    "You have a new task: " + task.getName());
-            LOGGER.info("Notification successfully dispatched to user: " + targetUser);
-        } catch (ApiException exception) {
-            LOGGER.log(Level.WARNING, "Failed to send push notification for task " + task.getId(), exception);
+            Message message = Message.builder()
+                    .setToken(userToken)
+                    .setNotification(Notification.builder()
+                            .setTitle("New Task Assigned")
+                            .setBody("You have a new task: " + task.getName())
+                            .build())
+                    .build();
+
+            String response = FirebaseMessaging.getInstance().send(message);
+            LOGGER.info("Firebase notification successfully dispatched to " + targetUser + ". Message ID: " + response);
+
+        } catch (Exception exception) {
+            LOGGER.log(Level.WARNING, "Firebase failed to send push notification to user: " + targetUser, exception);
         }
     }
 
-    private void sendNotifications(List<String> targetUsers, DelegateTask task) {
-        try {
-            pushNotificationService.sendToExternalUsers(
-                    targetUsers,
-                    "New Task Assigned",
-                    "You have a new task: " + task.getName());
-            LOGGER.info("Notification successfully dispatched to users: " + targetUsers);
-        } catch (ApiException exception) {
-            LOGGER.log(Level.WARNING, "Failed to send push notification for task " + task.getId(), exception);
+    /**
+     * Loops through a list of user IDs, grabs their tokens, and pushes notifications via Firebase
+     */
+    private void sendFirebaseNotificationsToMultipleUsers(List<String> targetUsers, DelegateTask task) {
+        List<String> successfullyNotified = new ArrayList<>();
+
+        for (String targetUser : targetUsers) {
+            String userToken = identityService.getUserInfo(targetUser, "fcm_token");
+
+            if (userToken == null || userToken.trim().isEmpty()) {
+                LOGGER.info("Skipping user '" + targetUser + "' - No active web push token found in H2.");
+                continue;
+            }
+
+            try {
+                Message message = Message.builder()
+                        .setToken(userToken)
+                        .setNotification(Notification.builder()
+                                .setTitle("Group Task Available")
+                                .setBody("A new group task is waiting: " + task.getName())
+                                .build())
+                        .build();
+
+                FirebaseMessaging.getInstance().send(message);
+                successfullyNotified.add(targetUser);
+
+            } catch (Exception exception) {
+                LOGGER.log(Level.WARNING, "Firebase failed to send group push notification to user: " + targetUser, exception);
+            }
+        }
+
+        if (!successfullyNotified.isEmpty()) {
+            LOGGER.info("Firebase completely finished processing. Notifications successfully landed for users: " + successfullyNotified);
         }
     }
 }

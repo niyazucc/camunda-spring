@@ -1,7 +1,16 @@
 {
   "components": [
     {
-      "text": "# Final Review\n**Tech Fix:** {{technicalWorkDone}}\n**Support Update:** {{supportSummary}}",
+      "text": "# Final Review",
+      "type": "text",
+      "layout": {
+        "row": "Row_1k3hdiz",
+        "columns": null
+      },
+      "id": "Field_1bbomah"
+    },
+    {
+      "text": "Tech Fix: {{technicalWorkDone}}\nSupport Update: {{supportSummary}}",
       "type": "text",
       "id": "Field_0h07otl",
       "layout": {
