@@ -1,7 +1,10 @@
 package com.example.camunda_spring;
 
+import com.example.camunda_spring.service.FcmTokenStore;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
 import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.delegate.DelegateTask;
@@ -23,10 +26,12 @@ public class PushTaskNotificationListener implements TaskListener {
     private static final Logger LOGGER = Logger.getLogger(PushTaskNotificationListener.class.getName());
 
     private final IdentityService identityService;
+    private final FcmTokenStore fcmTokenStore;
 
     // We can inject IdentityService directly. FirebaseMessaging handles its own singletons.
-    public PushTaskNotificationListener(IdentityService identityService) {
+    public PushTaskNotificationListener(IdentityService identityService, FcmTokenStore fcmTokenStore) {
         this.identityService = identityService;
+        this.fcmTokenStore = fcmTokenStore;
     }
 
     @Override
@@ -71,8 +76,7 @@ public class PushTaskNotificationListener implements TaskListener {
      * Sends a Firebase message to a single user by looking up their token in H2 storage
      */
     private void sendFirebaseNotification(String targetUser, DelegateTask task) {
-        // Pull the token directly out of Camunda's user info table
-        String userToken = identityService.getUserInfo(targetUser, "fcm_token");
+        String userToken = fcmTokenStore.getToken(targetUser);
 
         if (userToken == null || userToken.trim().isEmpty()) {
             LOGGER.warning("Could not send push notification. No FCM token registered for user: " + targetUser);
@@ -91,6 +95,8 @@ public class PushTaskNotificationListener implements TaskListener {
             String response = FirebaseMessaging.getInstance().send(message);
             LOGGER.info("Firebase notification successfully dispatched to " + targetUser + ". Message ID: " + response);
 
+        } catch (FirebaseMessagingException exception) {
+            handleFirebaseMessagingException(targetUser, exception);
         } catch (Exception exception) {
             LOGGER.log(Level.WARNING, "Firebase failed to send push notification to user: " + targetUser, exception);
         }
@@ -103,7 +109,7 @@ public class PushTaskNotificationListener implements TaskListener {
         List<String> successfullyNotified = new ArrayList<>();
 
         for (String targetUser : targetUsers) {
-            String userToken = identityService.getUserInfo(targetUser, "fcm_token");
+            String userToken = fcmTokenStore.getToken(targetUser);
 
             if (userToken == null || userToken.trim().isEmpty()) {
                 LOGGER.info("Skipping user '" + targetUser + "' - No active web push token found in H2.");
@@ -122,6 +128,8 @@ public class PushTaskNotificationListener implements TaskListener {
                 FirebaseMessaging.getInstance().send(message);
                 successfullyNotified.add(targetUser);
 
+            } catch (FirebaseMessagingException exception) {
+                handleFirebaseMessagingException(targetUser, exception);
             } catch (Exception exception) {
                 LOGGER.log(Level.WARNING, "Firebase failed to send group push notification to user: " + targetUser, exception);
             }
@@ -130,5 +138,19 @@ public class PushTaskNotificationListener implements TaskListener {
         if (!successfullyNotified.isEmpty()) {
             LOGGER.info("Firebase completely finished processing. Notifications successfully landed for users: " + successfullyNotified);
         }
+    }
+
+    private void handleFirebaseMessagingException(String targetUser, FirebaseMessagingException exception) {
+        MessagingErrorCode errorCode = exception.getMessagingErrorCode();
+
+        if (errorCode == MessagingErrorCode.UNREGISTERED || errorCode == MessagingErrorCode.INVALID_ARGUMENT) {
+            fcmTokenStore.deleteToken(targetUser);
+            LOGGER.warning("Removed stale FCM token for user '" + targetUser + "' after Firebase returned: " + errorCode);
+            return;
+        }
+
+        LOGGER.log(Level.WARNING,
+                "Firebase failed to send push notification to user '" + targetUser + "' with error code: " + errorCode,
+                exception);
     }
 }
